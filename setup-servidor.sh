@@ -20,17 +20,34 @@ else
 fi
 
 echo "🔄 Forçando atualização do repositório..."
-# Limpar cache do git
-git fetch --all --prune
-git fetch origin
+# Limpar cache do git completamente
+git fetch --all --prune --force
+git fetch origin --force
 
 # Verificar qual commit está no origin/main
 echo "📋 Commit atual no origin/main:"
-git log origin/main --oneline -1
+git log origin/main --oneline -1 || echo "⚠️  Não foi possível verificar origin/main"
 
-# Resetar para o commit correto
-echo "🔄 Resetando para origin/main..."
-git reset --hard origin/main
+# Verificar commits disponíveis
+echo "📋 Últimos commits disponíveis:"
+git log --oneline -5
+
+# Tentar atualizar para o commit mais recente
+echo "🔄 Tentando atualizar para o commit mais recente..."
+# Primeiro tenta pegar do origin/main
+git fetch origin main:main --force 2>/dev/null || true
+git reset --hard origin/main 2>/dev/null || git reset --hard HEAD
+
+# Se ainda estiver no commit antigo, forçar para o mais recente
+CURRENT_COMMIT=$(git rev-parse HEAD)
+LATEST_COMMIT=$(git log --all --format="%H" | head -1)
+if [ "$CURRENT_COMMIT" != "$LATEST_COMMIT" ]; then
+    echo "⚠️  Ainda no commit antigo, forçando para o mais recente..."
+    git reset --hard "$LATEST_COMMIT" 2>/dev/null || true
+fi
+
+echo "📋 Commit atual após reset:"
+git log --oneline -1
 
 # Verificar se os arquivos existem agora
 echo ""
@@ -57,7 +74,71 @@ if [ -f "deploy.sh" ]; then
 else
     echo "  ❌ deploy.sh NÃO encontrado"
     echo "  📥 Tentando baixar novamente..."
-    git checkout origin/main -- deploy.sh && chmod +x deploy.sh || echo "  ⚠️  Falha ao baixar deploy.sh"
+    git checkout origin/main -- deploy.sh 2>/dev/null && chmod +x deploy.sh || echo "  ⚠️  Falha ao baixar deploy.sh, criando manualmente..."
+    if [ ! -f "deploy.sh" ]; then
+        echo "  📝 Criando deploy.sh manualmente..."
+        cat > deploy.sh << 'DEPLOYEOF'
+#!/bin/bash
+
+# Script de deploy para o cardápio na porta 3007
+# Uso: ./deploy.sh
+
+set -e
+
+echo "🚀 Iniciando deploy do cardápio na porta 3007..."
+
+# Cores para output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# Verificar se está no diretório correto
+if [ ! -f "package.json" ]; then
+    echo -e "${RED}❌ Erro: package.json não encontrado. Execute este script no diretório do projeto.${NC}"
+    exit 1
+fi
+
+# Criar diretório de logs se não existir
+mkdir -p logs
+
+# Parar o processo PM2 se já estiver rodando
+echo -e "${YELLOW}📦 Parando processo PM2 existente (se houver)...${NC}"
+pm2 stop cardapio-3007 2>/dev/null || true
+pm2 delete cardapio-3007 2>/dev/null || true
+
+# Instalar dependências
+echo -e "${YELLOW}📦 Instalando dependências...${NC}"
+npm install --production
+
+# Fazer build do Next.js
+echo -e "${YELLOW}🔨 Fazendo build do projeto...${NC}"
+npm run build
+
+# Iniciar com PM2
+echo -e "${YELLOW}🚀 Iniciando aplicação com PM2...${NC}"
+pm2 start ecosystem.config.js
+
+# Salvar configuração do PM2
+pm2 save
+
+# Mostrar status
+echo -e "${GREEN}✅ Deploy concluído!${NC}"
+echo -e "${GREEN}📊 Status do PM2:${NC}"
+pm2 status
+
+echo -e "${GREEN}📝 Logs disponíveis em:${NC}"
+echo "  - /root/cardapio/logs/pm2-out.log"
+echo "  - /root/cardapio/logs/pm2-error.log"
+echo ""
+echo -e "${GREEN}🔍 Para ver os logs em tempo real:${NC}"
+echo "  pm2 logs cardapio-3007"
+echo ""
+echo -e "${GREEN}🌐 Aplicação rodando em: http://193.160.119.67:3007${NC}"
+DEPLOYEOF
+        chmod +x deploy.sh
+        echo "  ✅ deploy.sh criado"
+    fi
 fi
 
 # Criar arquivos manualmente se não existirem
