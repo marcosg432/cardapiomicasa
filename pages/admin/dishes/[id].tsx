@@ -16,7 +16,7 @@ export default function EditDish() {
     status: 'active',
     display_order: 0,
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -26,6 +26,7 @@ export default function EditDish() {
   }, [id]);
 
   const loadDish = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`/api/dishes/${id}`);
       if (res.ok) {
@@ -40,9 +41,13 @@ export default function EditDish() {
           status: data.status || 'active',
           display_order: data.display_order || 0,
         });
+      } else {
+        console.error('Erro ao carregar prato: Resposta não OK', res.status);
+        alert('Erro ao carregar dados do prato');
       }
     } catch (error) {
       console.error('Erro ao carregar prato:', error);
+      alert('Erro ao carregar dados do prato. Verifique o console.');
     } finally {
       setLoading(false);
     }

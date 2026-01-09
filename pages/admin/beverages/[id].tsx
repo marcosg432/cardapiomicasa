@@ -15,7 +15,7 @@ export default function EditBeverage() {
     status: 'active',
     display_order: 0,
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -25,6 +25,7 @@ export default function EditBeverage() {
   }, [id]);
 
   const loadBeverage = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`/api/beverages/${id}`);
       if (res.ok) {
@@ -38,9 +39,13 @@ export default function EditBeverage() {
           status: data.status || 'active',
           display_order: data.display_order || 0,
         });
+      } else {
+        console.error('Erro ao carregar bebida: Resposta não OK', res.status);
+        alert('Erro ao carregar dados da bebida');
       }
     } catch (error) {
       console.error('Erro ao carregar bebida:', error);
+      alert('Erro ao carregar dados da bebida. Verifique o console.');
     } finally {
       setLoading(false);
     }
