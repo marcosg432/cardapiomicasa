@@ -21,33 +21,25 @@ fi
 
 echo "🔄 Forçando atualização do repositório..."
 # Limpar cache do git completamente
-git fetch --all --prune --force
-git fetch origin --force
+git fetch --all --prune --force 2>/dev/null || true
 
-# Verificar qual commit está no origin/main
-echo "📋 Commit atual no origin/main:"
-git log origin/main --oneline -1 || echo "⚠️  Não foi possível verificar origin/main"
+# Tentar buscar diretamente do GitHub usando a URL
+echo "📥 Buscando atualizações do GitHub..."
+git fetch https://github.com/marcosg432/cardapiomicasa.git main:temp-main --force 2>/dev/null || true
 
-# Verificar commits disponíveis
-echo "📋 Últimos commits disponíveis:"
-git log --oneline -5
-
-# Tentar atualizar para o commit mais recente
-echo "🔄 Tentando atualizar para o commit mais recente..."
-# Primeiro tenta pegar do origin/main
-git fetch origin main:main --force 2>/dev/null || true
-git reset --hard origin/main 2>/dev/null || git reset --hard HEAD
-
-# Se ainda estiver no commit antigo, forçar para o mais recente
-CURRENT_COMMIT=$(git rev-parse HEAD)
-LATEST_COMMIT=$(git log --all --format="%H" | head -1)
-if [ "$CURRENT_COMMIT" != "$LATEST_COMMIT" ]; then
-    echo "⚠️  Ainda no commit antigo, forçando para o mais recente..."
-    git reset --hard "$LATEST_COMMIT" 2>/dev/null || true
+# Se conseguiu buscar, usar esse branch
+if git show-ref --verify --quiet refs/heads/temp-main; then
+    echo "✅ Atualizações encontradas, aplicando..."
+    git reset --hard temp-main 2>/dev/null || true
+    git branch -D temp-main 2>/dev/null || true
+else
+    # Se não conseguiu, tentar método tradicional
+    git fetch origin --force 2>/dev/null || true
+    git reset --hard origin/main 2>/dev/null || true
 fi
 
-echo "📋 Commit atual após reset:"
-git log --oneline -1
+echo "📋 Commit atual:"
+git log --oneline -1 || echo "⚠️  Não foi possível verificar commit"
 
 # Verificar se os arquivos existem agora
 echo ""
@@ -73,11 +65,8 @@ if [ -f "deploy.sh" ]; then
     chmod +x deploy.sh
 else
     echo "  ❌ deploy.sh NÃO encontrado"
-    echo "  📥 Tentando baixar novamente..."
-    git checkout origin/main -- deploy.sh 2>/dev/null && chmod +x deploy.sh || echo "  ⚠️  Falha ao baixar deploy.sh, criando manualmente..."
-    if [ ! -f "deploy.sh" ]; then
-        echo "  📝 Criando deploy.sh manualmente..."
-        cat > deploy.sh << 'DEPLOYEOF'
+    echo "  📝 Criando deploy.sh manualmente..."
+    cat > deploy.sh << 'DEPLOYEOF'
 #!/bin/bash
 
 # Script de deploy para o cardápio na porta 3007
@@ -136,9 +125,8 @@ echo "  pm2 logs cardapio-3007"
 echo ""
 echo -e "${GREEN}🌐 Aplicação rodando em: http://193.160.119.67:3007${NC}"
 DEPLOYEOF
-        chmod +x deploy.sh
-        echo "  ✅ deploy.sh criado"
-    fi
+    chmod +x deploy.sh
+    echo "  ✅ deploy.sh criado"
 fi
 
 # Criar arquivos manualmente se não existirem
