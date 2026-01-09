@@ -19,17 +19,22 @@ export default function EditBeverage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    if (router.isReady && id) {
       loadBeverage();
     }
-  }, [id]);
+  }, [router.isReady, id]);
 
   const loadBeverage = async () => {
+    if (!id) return;
+    
     setLoading(true);
     try {
-      const res = await fetch(`/api/beverages/${id}`);
+      const beverageId = Array.isArray(id) ? id[0] : id;
+      const res = await fetch(`/api/beverages/${beverageId}`);
+      
       if (res.ok) {
         const data = await res.json();
+        console.log('Dados carregados:', data);
         setFormData({
           name: data.name || '',
           description: data.description || '',
@@ -40,8 +45,9 @@ export default function EditBeverage() {
           display_order: data.display_order || 0,
         });
       } else {
-        console.error('Erro ao carregar bebida: Resposta não OK', res.status);
-        alert('Erro ao carregar dados da bebida');
+        const errorText = await res.text();
+        console.error('Erro ao carregar bebida: Resposta não OK', res.status, errorText);
+        alert(`Erro ao carregar dados da bebida (${res.status})`);
       }
     } catch (error) {
       console.error('Erro ao carregar bebida:', error);
@@ -65,7 +71,8 @@ export default function EditBeverage() {
         ? Number(formData.display_order as string) 
         : (typeof formData.display_order === 'number' ? formData.display_order : 0);
 
-      const res = await fetch(`/api/beverages/${id}`, {
+      const beverageId = Array.isArray(id) ? id[0] : id;
+      const res = await fetch(`/api/beverages/${beverageId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,7 +100,8 @@ export default function EditBeverage() {
     if (!confirm('Tem certeza que deseja excluir esta bebida?')) return;
 
     try {
-      const res = await fetch(`/api/beverages/${id}`, {
+      const beverageId = Array.isArray(id) ? id[0] : id;
+      const res = await fetch(`/api/beverages/${beverageId}`, {
         method: 'DELETE',
       });
 

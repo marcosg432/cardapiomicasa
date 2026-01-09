@@ -20,17 +20,22 @@ export default function EditDish() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    if (router.isReady && id) {
       loadDish();
     }
-  }, [id]);
+  }, [router.isReady, id]);
 
   const loadDish = async () => {
+    if (!id) return;
+    
     setLoading(true);
     try {
-      const res = await fetch(`/api/dishes/${id}`);
+      const dishId = Array.isArray(id) ? id[0] : id;
+      const res = await fetch(`/api/dishes/${dishId}`);
+      
       if (res.ok) {
         const data = await res.json();
+        console.log('Dados carregados:', data);
         setFormData({
           name: data.name || '',
           mini_presentation: data.mini_presentation || '',
@@ -42,8 +47,9 @@ export default function EditDish() {
           display_order: data.display_order || 0,
         });
       } else {
-        console.error('Erro ao carregar prato: Resposta não OK', res.status);
-        alert('Erro ao carregar dados do prato');
+        const errorText = await res.text();
+        console.error('Erro ao carregar prato: Resposta não OK', res.status, errorText);
+        alert(`Erro ao carregar dados do prato (${res.status})`);
       }
     } catch (error) {
       console.error('Erro ao carregar prato:', error);
@@ -67,7 +73,8 @@ export default function EditDish() {
         ? Number(formData.display_order as string) 
         : (typeof formData.display_order === 'number' ? formData.display_order : 0);
 
-      const res = await fetch(`/api/dishes/${id}`, {
+      const dishId = Array.isArray(id) ? id[0] : id;
+      const res = await fetch(`/api/dishes/${dishId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,7 +102,8 @@ export default function EditDish() {
     if (!confirm('Tem certeza que deseja excluir este prato?')) return;
 
     try {
-      const res = await fetch(`/api/dishes/${id}`, {
+      const dishId = Array.isArray(id) ? id[0] : id;
+      const res = await fetch(`/api/dishes/${dishId}`, {
         method: 'DELETE',
       });
 
