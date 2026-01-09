@@ -6,13 +6,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'GET') {
     try {
+      // Garantir que id é um número ou string válido
+      const dishId = Array.isArray(id) ? id[0] : id;
+      if (!dishId) {
+        return res.status(400).json({ error: 'ID do prato é obrigatório' });
+      }
+
+      console.log('Buscando prato com ID:', dishId);
       const dish = await get(
         `SELECT d.*, c.name as category_name 
          FROM dishes d 
          LEFT JOIN categories c ON d.category_id = c.id 
          WHERE d.id = ? AND d.status != 'deleted'`,
-        [id]
+        [dishId]
       );
+
+      console.log('Prato encontrado:', dish ? 'Sim' : 'Não');
 
       if (!dish) {
         return res.status(404).json({ error: 'Prato não encontrado' });
@@ -27,6 +36,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'PUT') {
     try {
+      const dishId = Array.isArray(id) ? id[0] : id;
+      if (!dishId) {
+        return res.status(400).json({ error: 'ID do prato é obrigatório' });
+      }
+
       const { name, mini_presentation, full_description, image_url, category_id, price, status, display_order } = req.body;
 
       await run(
@@ -34,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
          SET name = ?, mini_presentation = ?, full_description = ?, image_url = ?, 
              category_id = ?, price = ?, status = ?, display_order = ?, updated_at = CURRENT_TIMESTAMP
          WHERE id = ?`,
-        [name, mini_presentation, full_description, image_url, category_id, price, status, display_order, id]
+        [name, mini_presentation, full_description, image_url, category_id, price, status, display_order, dishId]
       );
 
       return res.status(200).json({ success: true });
@@ -46,7 +60,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'DELETE') {
     try {
-      await run(`UPDATE dishes SET status = 'deleted' WHERE id = ?`, [id]);
+      const dishId = Array.isArray(id) ? id[0] : id;
+      if (!dishId) {
+        return res.status(400).json({ error: 'ID do prato é obrigatório' });
+      }
+
+      await run(`UPDATE dishes SET status = 'deleted' WHERE id = ?`, [dishId]);
       return res.status(200).json({ success: true });
     } catch (error) {
       console.error('Erro ao excluir prato:', error);

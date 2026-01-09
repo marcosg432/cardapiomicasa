@@ -32,11 +32,21 @@ export default function PratoPage() {
   }, []);
 
   const loadDish = async () => {
+    if (!id) return;
+    
+    setLoading(true);
     try {
-      const res = await fetch(`/api/dishes/${id}`);
+      const dishId = Array.isArray(id) ? id[0] : id;
+      const res = await fetch(`/api/dishes/${dishId}`);
+      
       if (res.ok) {
         const data = await res.json();
+        console.log('Dados do prato carregados:', data);
         setDish(data);
+      } else {
+        console.error('Erro ao carregar prato: Resposta não OK', res.status);
+        const errorText = await res.text();
+        console.error('Erro:', errorText);
       }
     } catch (error) {
       console.error('Erro ao carregar prato:', error);
@@ -46,7 +56,18 @@ export default function PratoPage() {
   };
 
   useEffect(() => {
-    if (!isDesktop && id) {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth > 768);
+    };
+    
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+
+  useEffect(() => {
+    if (router.isReady && !isDesktop && id) {
       loadDish();
     }
     
@@ -57,7 +78,9 @@ export default function PratoPage() {
     } else {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      setLoading(false);
+      if (!router.isReady || !id) {
+        setLoading(false);
+      }
     }
     
     // Limpar quando sair da página
@@ -66,7 +89,7 @@ export default function PratoPage() {
       document.documentElement.style.overflow = '';
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isDesktop]);
+  }, [router.isReady, id, isDesktop]);
 
   if (isDesktop) {
     return (

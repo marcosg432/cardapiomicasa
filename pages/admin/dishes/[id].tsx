@@ -22,6 +22,8 @@ export default function EditDish() {
   useEffect(() => {
     if (router.isReady && id) {
       loadDish();
+    } else if (!router.isReady) {
+      setLoading(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady, id]);
