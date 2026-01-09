@@ -18,22 +18,18 @@ export default function PratoPage() {
   const { id } = router.query;
   const [dish, setDish] = useState<Dish | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      loadDish();
-    }
-    
-    // Desabilitar scroll na página
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-    
-    // Limpar quando sair da página
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth > 768);
     };
-  }, [id]);
+    
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   const loadDish = async () => {
     try {
@@ -48,6 +44,66 @@ export default function PratoPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!isDesktop && id) {
+      loadDish();
+    }
+    
+    // Desabilitar scroll na página apenas no mobile
+    if (!isDesktop) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      setLoading(false);
+    }
+    
+    // Limpar quando sair da página
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isDesktop]);
+
+  if (isDesktop) {
+    return (
+      <>
+        <Head>
+          <title>Cardápio</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        </Head>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          backgroundImage: 'url(/imagem/verde.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          padding: '20px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            padding: '40px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            maxWidth: '500px'
+          }}>
+            <h1 style={{ color: '#333', marginBottom: '20px', fontSize: '24px' }}>
+              Este cardápio só pode ser acessado pelo celular
+            </h1>
+            <p style={{ color: '#666', fontSize: '16px', lineHeight: '1.6' }}>
+              Por favor, acesse pelo celular para visualizar o cardápio completo.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (loading) {
     return (

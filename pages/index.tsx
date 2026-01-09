@@ -20,10 +20,24 @@ export default function Cardapio() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [beverages, setBeverages] = useState<Beverage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    loadData();
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth > 768);
+    };
+    
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    
+    return () => window.removeEventListener('resize', checkDesktop);
   }, []);
+
+  useEffect(() => {
+    if (!isDesktop) {
+      loadData();
+    }
+  }, [isDesktop]);
 
   const loadData = async () => {
     try {
@@ -63,6 +77,43 @@ export default function Cardapio() {
       setLoading(false);
     }
   };
+
+  if (isDesktop) {
+    return (
+      <>
+        <Head>
+          <title>Cardápio</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        </Head>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          backgroundImage: 'url(/imagem/verde.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          padding: '20px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            padding: '40px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            maxWidth: '500px'
+          }}>
+            <h1 style={{ color: '#333', marginBottom: '20px', fontSize: '24px' }}>
+              Este cardápio só pode ser acessado pelo celular
+            </h1>
+            <p style={{ color: '#666', fontSize: '16px', lineHeight: '1.6' }}>
+              Por favor, acesse pelo celular para visualizar o cardápio completo.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

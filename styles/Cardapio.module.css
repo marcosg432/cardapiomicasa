@@ -187,16 +187,4 @@
   font-size: 16px;
 }
 
-/* Desktop warning */
-@media (min-width: 769px) {
-  .container::before {
-    content: "Este cardápio é otimizado apenas para dispositivos móveis. Por favor, acesse em um celular.";
-    display: block;
-    background: #ff6b6b;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    font-weight: 600;
-  }
-}
 

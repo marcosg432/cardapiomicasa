@@ -1,7 +1,7 @@
 .container {
   max-width: 100%;
   margin: 0 auto;
-  background-image: url('/imagem/fundo privada.png');
+  background-image: url('/imagem/00.png');
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
@@ -120,14 +120,3 @@
   color: #ff6b6b;
 }
 
-@media (min-width: 769px) {
-  .container::before {
-    content: "Este cardápio é otimizado apenas para dispositivos móveis. Por favor, acesse em um celular.";
-    display: block;
-    background: #ff6b6b;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    font-weight: 600;
-  }
-}

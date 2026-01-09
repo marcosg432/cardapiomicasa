@@ -4,7 +4,10 @@
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: url('/imagem/verde.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: white;
   padding: 20px;
   display: flex;
@@ -91,7 +94,9 @@
 
 .searchButton, .addButton {
   padding: 10px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: url('/imagem/verde.png');
+  background-size: cover;
+  background-position: center;
   color: white;
   border-radius: 8px;
   font-size: 14px;

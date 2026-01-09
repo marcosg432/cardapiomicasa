@@ -4,28 +4,27 @@ import Link from 'next/link';
 import styles from '@/styles/Admin.module.css';
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState(() => {
-    // No mobile, iniciar com 'orders', no desktop com 'dishes'
-    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-      return 'orders';
-    }
-    return 'dishes';
-  });
+  const [activeTab, setActiveTab] = useState('dishes');
 
   useEffect(() => {
     // Inicializar admin na primeira vez
     fetch('/api/init', { method: 'POST' }).catch(() => {});
     
+    // No mobile, iniciar com 'orders'
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      setActiveTab('orders');
+    }
+    
     // Listener para mudanças de tamanho da tela
     const handleResize = () => {
-      if (window.innerWidth <= 768 && activeTab !== 'orders') {
-        setActiveTab('orders');
+      if (window.innerWidth <= 768) {
+        setActiveTab((currentTab) => currentTab !== 'orders' ? 'orders' : currentTab);
       }
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [activeTab]);
+  }, []);
 
   return (
     <>

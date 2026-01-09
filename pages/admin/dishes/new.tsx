@@ -116,13 +116,41 @@ export default function NewDish() {
               <input value={formData.name} disabled />
             </div>
             <div className={styles.formGroup}>
-              <label>Descrição Completa *</label>
+              <label>Descrição Completa * (Máximo 8 linhas e 300 caracteres)</label>
               <textarea
                 value={formData.full_description}
-                onChange={(e) => setFormData({ ...formData, full_description: e.target.value })}
+                onChange={(e) => {
+                  const text = e.target.value;
+                  const lines = text.split('\n');
+                  // Prioridade: primeiro verifica linhas, depois caracteres
+                  if (lines.length > 8) {
+                    // Se exceder 8 linhas, não permite
+                    return;
+                  }
+                  if (text.length <= 300) {
+                    setFormData({ ...formData, full_description: text });
+                  }
+                }}
+                onKeyDown={(e) => {
+                  const text = (e.target as HTMLTextAreaElement).value;
+                  const lines = text.split('\n');
+                  // Bloqueia Enter se já tiver 8 linhas
+                  if (lines.length >= 8 && e.key === 'Enter') {
+                    e.preventDefault();
+                    return;
+                  }
+                  // Bloqueia qualquer tecla se tiver 300 caracteres (exceto Backspace/Delete)
+                  if (text.length >= 300 && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
+                    e.preventDefault();
+                  }
+                }}
                 required
-                rows={6}
+                rows={8}
+                maxLength={300}
               />
+              <small style={{ color: '#666', fontSize: '12px' }}>
+                {formData.full_description.split('\n').length}/8 linhas - {formData.full_description.length}/300 caracteres
+              </small>
             </div>
             <div className={styles.formGroup}>
               <label>URL da Imagem *</label>
