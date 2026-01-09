@@ -18,6 +18,7 @@ export default function PratoPage() {
   const { id } = router.query;
   const [dish, setDish] = useState<Dish | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
@@ -32,43 +33,52 @@ export default function PratoPage() {
   }, []);
 
   const loadDish = async () => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      setError('ID do prato não encontrado');
+      return;
+    }
     
     setLoading(true);
+    setError(null);
+    
     try {
       const dishId = Array.isArray(id) ? id[0] : id;
+      console.log('Carregando prato com ID:', dishId);
+      
       const res = await fetch(`/api/dishes/${dishId}`);
       
       if (res.ok) {
         const data = await res.json();
         console.log('Dados do prato carregados:', data);
-        setDish(data);
+        if (data && data.id) {
+          setDish(data);
+        } else {
+          setError('Prato não encontrado');
+        }
       } else {
-        console.error('Erro ao carregar prato: Resposta não OK', res.status);
         const errorText = await res.text();
-        console.error('Erro:', errorText);
+        console.error('Erro ao carregar prato: Resposta não OK', res.status, errorText);
+        setError(`Erro ao carregar prato (${res.status})`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar prato:', error);
+      setError('Erro ao conectar com o servidor');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const checkDesktop = () => {
-      setIsDesktop(window.innerWidth > 768);
-    };
-    
-    checkDesktop();
-    window.addEventListener('resize', checkDesktop);
-    
-    return () => window.removeEventListener('resize', checkDesktop);
-  }, []);
-
-  useEffect(() => {
-    if (router.isReady && !isDesktop && id) {
-      loadDish();
+    if (router.isReady) {
+      if (isDesktop) {
+        setLoading(false);
+      } else if (id) {
+        loadDish();
+      } else {
+        setLoading(false);
+        setError('ID do prato não encontrado');
+      }
     }
     
     // Desabilitar scroll na página apenas no mobile
@@ -78,9 +88,6 @@ export default function PratoPage() {
     } else {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
-      if (!router.isReady || !id) {
-        setLoading(false);
-      }
     }
     
     // Limpar quando sair da página
@@ -136,10 +143,12 @@ export default function PratoPage() {
     );
   }
 
-  if (!dish) {
+  if (error || !dish) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>Prato não encontrado</div>
+        <div className={styles.error}>
+          {error || 'Prato não encontrado'}
+        </div>
         <Link href="/">
           <button className={styles.backButton}>Voltar ao Cardápio</button>
         </Link>
