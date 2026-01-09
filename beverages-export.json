@@ -1,0 +1,62 @@
+﻿[
+    {
+        "id":  1,
+        "name":  "coca",
+        "description":  "",
+        "image_url":  "https://i.pinimg.com/736x/d9/90/b4/d990b4e3fafb7073f2ab7241e48aea0b.jpg",
+        "category_id":  null,
+        "price":  9.99,
+        "status":  "active",
+        "display_order":  0,
+        "created_at":  "2025-12-28 01:02:10",
+        "updated_at":  "2025-12-28 01:02:10"
+    },
+    {
+        "id":  3,
+        "name":  "Suco de laranja natural",
+        "description":  "",
+        "image_url":  "https://i.pinimg.com/1200x/3c/f4/93/3cf4934a1808a643e4ae617d4df470fc.jpg",
+        "category_id":  null,
+        "price":  10,
+        "status":  "active",
+        "display_order":  0,
+        "created_at":  "2025-12-28 15:47:10",
+        "updated_at":  "2025-12-28 15:47:10"
+    },
+    {
+        "id":  4,
+        "name":  "agua sem gás ",
+        "description":  "",
+        "image_url":  "https://i.pinimg.com/736x/da/ab/52/daab522863d80eb4b8df524736bfc1a4.jpg",
+        "category_id":  null,
+        "price":  5,
+        "status":  "active",
+        "display_order":  0,
+        "created_at":  "2025-12-28 15:49:03",
+        "updated_at":  "2025-12-28 15:49:03"
+    },
+    {
+        "id":  5,
+        "name":  "agua com gás",
+        "description":  "",
+        "image_url":  "https://i.pinimg.com/1200x/2b/df/ee/2bdfee219e4ba6f493832cb2f81b5311.jpg",
+        "category_id":  null,
+        "price":  5,
+        "status":  "active",
+        "display_order":  0,
+        "created_at":  "2025-12-28 15:49:49",
+        "updated_at":  "2025-12-28 15:49:49"
+    },
+    {
+        "id":  6,
+        "name":  "Suco Natural de Maracujá",
+        "description":  "",
+        "image_url":  "https://i.pinimg.com/736x/68/b7/aa/68b7aa219f1e77c16a069774cfe2b79c.jpg",
+        "category_id":  null,
+        "price":  8,
+        "status":  "active",
+        "display_order":  0,
+        "created_at":  "2025-12-28 15:52:27",
+        "updated_at":  "2025-12-28 15:52:27"
+    }
+]
